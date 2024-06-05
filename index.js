@@ -4,14 +4,13 @@ const cors = require('cors')
 const cookieParser =require("cookie-parser");
 require('dotenv').config()
 const mongoose= require('mongoose')
-const { User } = require('./models.js')
+const { User, Exercise } = require('./models.js')
 const conn = mongoose.connect(process.env.DB_URL)
 
 app.use(cors())
 app.use(express.static('public'))
 app.use(express.json())
 app.use(express.urlencoded({extended:true, limit:"32kb"}))
-app.use(express.urlencoded())
 app.use(cookieParser())
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
@@ -52,6 +51,38 @@ app.get('/api/users',async (req,res)=>{
   .json(data)
 })
 
+
+app.post('/api/users/:_id/exercises',async(req,res)=>{
+
+  const user = await User.findById(req.params._id)
+
+  if(!user){
+    return res.status(400).json({error:"User not found"})
+  }
+
+  const {description,duration} = req.body;
+  const date = req.body.date || (new Date()).toString().substring(0,15)
+  
+  // console.log(date);
+
+  const exercise = await Exercise.create({
+    description,
+    date,
+    duration,
+    user
+  })
+
+  return res
+  .status(200)
+  .json({
+    _id: exercise.user._id,
+    username: exercise.user.username,
+    duration: exercise.duration,
+    description: exercise.description,
+    date: exercise.date
+  })
+
+})
 
 
 
