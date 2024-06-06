@@ -26,29 +26,29 @@ const exerciseSchema = mongoose.Schema({
         required: true
     },
     date: {
-        type: String
+        type: Date
     }
 })
 
 const Exercise = mongoose.model("Exercise",exerciseSchema)
 
 
-const logSchema = mongoose.Schema({
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    },
-    count: Number,
-    log:[
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref:'Exercise'
-        }
-    ]
-})
+// const logSchema = mongoose.Schema({
+//     user: {
+//         type: mongoose.Schema.Types.ObjectId,
+//         ref: 'User',
+//         required: true
+//     },
+//     count: Number,
+//     log:[
+//         {
+//             type: mongoose.Schema.Types.ObjectId,
+//             ref:'Exercise'
+//         }
+//     ]
+// })
 
-const Log= mongoose.model('Log',logSchema)
+// const Log= mongoose.model('Log',logSchema)
 
 
-module.exports= {Log,Exercise,User}
+module.exports= {Exercise,User}

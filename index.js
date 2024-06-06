@@ -61,7 +61,7 @@ app.post('/api/users/:_id/exercises',async(req,res)=>{
   }
 
   const {description,duration} = req.body;
-  const date = req.body.date || (new Date()).toString().substring(0,15)
+  const date = req.body.date || Date.now()
   
   // console.log(date);
 
@@ -75,11 +75,77 @@ app.post('/api/users/:_id/exercises',async(req,res)=>{
   return res
   .status(200)
   .json({
-    _id: exercise.user._id,
     username: exercise.user.username,
+    date: exercise.date.toDateString(),
     duration: exercise.duration,
     description: exercise.description,
-    date: exercise.date
+    _id: exercise.user._id
+  })
+})
+
+
+app.get('/api/users/:_id/logs',async (req,res)=>{
+
+  const user = await User.findById(req.params._id)
+  const from = req.query.from
+  const to = req.query.to
+  const limit = new Number(req.query.limit)
+
+  var exercise
+
+
+  if(!(from||to)){
+    exercise = await Exercise.find({user:user})
+  }else if(!to){
+      exercise = await Exercise.find({
+        user:user,
+        date: {
+          $gt: new Date(from)
+        }
+      })
+  }else if(!from){
+    exercise = await Exercise.find({
+      user:user,
+      date: {
+        $lt: new Date(to)
+      }
+    })
+  }else{
+    exercise = await Exercise.find({
+      user:user,
+      date: {
+        $gt: new Date(from),
+        $lt: new Date(to)
+      }
+    })
+  }
+
+  exercise.forEach(element => {
+    element.date = element.date.toDateString()
+  });
+
+  if(limit>0){
+    exercise = exercise.slice(0,limit)
+  }
+
+  var newExercise = [];
+  exercise.forEach((element)=>{
+    newExercise.push({
+      description:element.description,
+      date:element.date.toDateString(),
+      duration: element.duration
+    })
+  })
+
+  console.log(newExercise);
+
+  return res
+  .status(200)
+  .json({
+    _id: user._id,
+    username: user.username,
+    count: newExercise.length,
+    log: newExercise
   })
 
 })
