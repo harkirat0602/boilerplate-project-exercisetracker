@@ -67,7 +67,7 @@ app.post('/api/users/:_id/exercises',async(req,res)=>{
 
   const exercise = await Exercise.create({
     description,
-    date,
+    date: (new Date(date)).getTime(),
     duration,
     user
   })
@@ -76,7 +76,7 @@ app.post('/api/users/:_id/exercises',async(req,res)=>{
   .status(200)
   .json({
     username: exercise.user.username,
-    date: exercise.date.toDateString(),
+    date: new Date(exercise.date).toDateString(),
     duration: exercise.duration,
     description: exercise.description,
     _id: exercise.user._id
@@ -87,8 +87,8 @@ app.post('/api/users/:_id/exercises',async(req,res)=>{
 app.get('/api/users/:_id/logs',async (req,res)=>{
 
   const user = await User.findById(req.params._id)
-  const from = req.query.from
-  const to = req.query.to
+  const from = (new Date(req.query.from)).getTime()
+  const to = (new Date(req.query.to)).getTime()
   const limit = new Number(req.query.limit)
 
   var exercise
@@ -100,29 +100,26 @@ app.get('/api/users/:_id/logs',async (req,res)=>{
       exercise = await Exercise.find({
         user:user,
         date: {
-          $gt: new Date(from)
+          $gte: from
         }
       })
   }else if(!from){
     exercise = await Exercise.find({
       user:user,
       date: {
-        $lt: new Date(to)
+        $lte: to
       }
     })
   }else{
     exercise = await Exercise.find({
       user:user,
       date: {
-        $gt: new Date(from),
-        $lt: new Date(to)
+        $gte: from,
+        $lte: to
       }
     })
   }
 
-  exercise.forEach(element => {
-    element.date = element.date.toDateString()
-  });
 
   if(limit>0){
     exercise = exercise.slice(0,limit)
@@ -132,7 +129,7 @@ app.get('/api/users/:_id/logs',async (req,res)=>{
   exercise.forEach((element)=>{
     newExercise.push({
       description:element.description,
-      date:element.date.toDateString(),
+      date:new Date(element.date).toDateString(),
       duration: element.duration
     })
   })
